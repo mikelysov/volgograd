@@ -107,7 +107,7 @@ def analyze_desc(sprotr, sprtech, otr, tech, org, prod):
         if len(found) > 0:
             otr_id = found.otr.tolist()[0]
             otr_lst = []
-            otr_lst.append(found.Отрасль.tolist()[0] + ' ' + found.Подотрасль.tolist()[0])
+            otr_lst.append(prow['Описание продукта (с указанием конкретных характеристик)'])
             
             seq_list = tokenizer.texts_to_sequences(otr_lst)
             
@@ -124,10 +124,13 @@ def analyze_desc(sprotr, sprtech, otr, tech, org, prod):
             pred = model_otr.predict(x, verbose=0)
             otr_id_new = np.argmax(pred)
             if otr_id != otr_id_new:
-                name1, name2 = found.Отрасль.tolist()[0], found.Подотрасль.tolist()[0]
+                name1 = prow['Описание продукта (с указанием конкретных характеристик)']
                 found = sprotr[sprotr.otr==otr_id_new]
-                name3, name4 = found.Отрасль.tolist()[0], found.Подотрасль.tolist()[0]
-                result.append('Для продукта %s отрасль "%s-%s" модель определила как "%s-%s"' %(prow.global_id, name1, name2, name3, name4))
+                if len(found) > 0:
+                    name2 = found.Отрасль.tolist()[0] + ' ' + found.Подотрасль.tolist()[0]
+                else:
+                    name2 = ''
+                result.append('Для продукта %s описание модель определила как "%s"' %(prow.global_id, name2))
     
     return result
 
@@ -149,8 +152,8 @@ def main():
     
     sprotr, sprtech, otr, tech, org, prod = load_set()
     
-    #result = analyze_set(sprotr, sprtech, otr, tech, org, prod)
-    #save_t0_excel(result, 'errors.xls')
+    result = analyze_set(sprotr, sprtech, otr, tech, org, prod)
+    save_t0_excel(result, 'errors.xls')
     
     result = analyze_desc(sprotr, sprtech, otr, tech, org, prod)
     save_t0_excel(result, 'errors_desc.xls')
